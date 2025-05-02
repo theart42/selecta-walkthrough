@@ -8,7 +8,7 @@ It is highly recommended to pull a postgres:13 container, so you can do some res
 
 If you portscan, you will find a web server on port 8000. The web site is a random quote generator from the Hitchhikers Guide to the Galaxy:
 
-![image.png](Walkthrough/image%201.png)
+![image.png](image1.png)
 
 There is a `script.js` file that does the heavy lifting:
 
@@ -268,7 +268,7 @@ However, in a docker container, it looks like this:
 
 (For convenience, we made a symlink from `13/main` to `data`):
 
-![image.png](Walkthrough/image%202.png)
+![image.png](image2.png)
 
 We can try both basepaths and try to read the raw `pg_authid` file:
 
@@ -287,7 +287,7 @@ Ok, that worked, let’s examine the file:
 
 `xxd pg_authid` shows the hex dump, with some interesting bits:
 
-![image.png](Walkthrough/image%203.png)
+![image.png](image3.png)
 
 We see our `poc_user` role with binary data, and we see the `postgres` role with all the privileges. We also see the (MD5!) hashed passwords of the roles, but as we don’t have direct acecss to postgres port, there’s not much we can do with it (if we can even dehash them).
 
@@ -303,17 +303,17 @@ We don’t need to understand / manipulate the whole structure, we’re interest
 
 The `poc_user` permissions are:
 
-![image.png](Walkthrough/image%204.png)
+![image.png](image4.png)
 
 And for `postgres`:
 
-![image.png](Walkthrough/image%205.png)
+![image.png](image5.png)
 
 The one for postgres has 7 `01` bytes (corresponding to all privileges), and the one for poc_user only has 2 (for the rolinherit and rolcanlogin privileges).
 
 We can edit this file with a hexeditor and set the missing flags for poc_user (save the edited version as `pg_authid.new` to prevent overwriting the old one):
 
-![image.png](Walkthrough/image%206.png)
+![image.png](image6.png)
 
 We can upload the ‘enhanced’ pg_authid file and see what happens.
 
